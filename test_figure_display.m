@@ -178,8 +178,8 @@ function output_data = test_figure_display(input_data, params)
     output_data.name = '测试显示';
     output_data.timestamp = datetime('now');
 
-    % ⭐ 关键：将figure保存到additional_outputs的cached_figure字段
-    output_data.additional_outputs = struct('cached_figure', fig);
+    % ⭐ 关键：将figure直接保存为顶层字段（系统会自动放到additional_outputs中）
+    output_data.cached_figure = fig;
 
     fprintf('\n========== 测试脚本执行完成 ==========\n');
     fprintf('✅ 已生成包含以下元素的测试图：\n');

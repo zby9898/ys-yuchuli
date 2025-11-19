@@ -93,8 +93,8 @@ function output_data = test_simple_text(input_data, params)
     output_data.name = '简单测试';
     output_data.timestamp = datetime('now');
 
-    % 保存figure到缓存
-    output_data.additional_outputs = struct('cached_figure', fig);
+    % 保存figure到缓存（直接作为顶层字段）
+    output_data.cached_figure = fig;
 
     fprintf('\n✅ 简单测试脚本执行完成\n');
     fprintf('   包含元素：标题、轴标签、颜色条、网格、文字、数字\n');
