@@ -907,7 +907,7 @@ classdef MatViewerTool < matlab.apps.AppBase
             app.ShowPrep3Btn.Enable = 'off';
             app.ShowPrep3Btn.Layout.Row = 1;
             app.ShowPrep3Btn.Layout.Column = 8;
-            app.ShowPrep3Btn.ButtonPushedFcn = createCallbackFcn(app, @(~,~)executePrepOnCurrentFrame(app, 1), true);
+            app.ShowPrep3Btn.ButtonPushedFcn = createCallbackFcn(app, @(~,~)executePrepOnCurrentFrame(app, -1), true);  % -1表示使用最新的预处理
             app.ShowPrep3Btn.Tooltip = '自定义预处理';
 
             % 动态预处理按钮容器（用于显示自定义预处理按钮）
@@ -5249,7 +5249,7 @@ classdef MatViewerTool < matlab.apps.AppBase
             % 只有当有自定义预处理时，才更新第三个按钮
             if numPreps > 0
                 app.ShowPrep3Btn.Enable = 'on';
-                app.ShowPrep3Btn.Text = app.PreprocessingList{1}.name;  % 第一个自定义预处理
+                app.ShowPrep3Btn.Text = app.PreprocessingList{end}.name;  % 最新添加的预处理
             else
                 app.ShowPrep3Btn.Enable = 'off';
                 app.ShowPrep3Btn.Text = '预处理';
@@ -6561,11 +6561,20 @@ classdef MatViewerTool < matlab.apps.AppBase
 
         function executePrepOnCurrentFrame(app, prepIndex)
             % 对当前帧执行预处理并显示
-            % prepIndex: 1, 2, 3
+            % prepIndex: 1, 2, 3, 或 -1表示使用最新的预处理
 
             if isempty(app.MatData) || app.CurrentIndex > length(app.MatData)
                 uialert(app.UIFigure, '请先导入数据', '提示');
                 return;
+            end
+
+            % 如果prepIndex <= 0，使用最新的预处理
+            if prepIndex <= 0
+                if isempty(app.PreprocessingList)
+                    uialert(app.UIFigure, '未配置任何预处理', '提示');
+                    return;
+                end
+                prepIndex = length(app.PreprocessingList);
             end
 
             if prepIndex > length(app.PreprocessingList)
