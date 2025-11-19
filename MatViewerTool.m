@@ -6076,7 +6076,7 @@ classdef MatViewerTool < matlab.apps.AppBase
                         % 获取第一个axes
                         sourceAx = figAxes(1);
 
-                        % 复制所有图形对象
+                        % 复制所有图形对象（包括text、line、image、surface等）
                         copyobj(allchild(sourceAx), ax);
 
                         % 复制axes属性
@@ -6091,6 +6091,33 @@ classdef MatViewerTool < matlab.apps.AppBase
                             ax.ZLabel.String = sourceAx.ZLabel.String;
                         end
 
+                        % 复制Title（包括其字体、颜色等属性）
+                        if ~isempty(sourceAx.Title.String)
+                            ax.Title.String = sourceAx.Title.String;
+                            ax.Title.FontSize = sourceAx.Title.FontSize;
+                            ax.Title.FontWeight = sourceAx.Title.FontWeight;
+                            ax.Title.Color = sourceAx.Title.Color;
+                            ax.Title.Interpreter = sourceAx.Title.Interpreter;
+                        end
+
+                        % 复制XLabel、YLabel、ZLabel的字体属性
+                        ax.XLabel.FontSize = sourceAx.XLabel.FontSize;
+                        ax.XLabel.Color = sourceAx.XLabel.Color;
+                        ax.YLabel.FontSize = sourceAx.YLabel.FontSize;
+                        ax.YLabel.Color = sourceAx.YLabel.Color;
+                        if ~isempty(sourceAx.ZLabel.String)
+                            ax.ZLabel.FontSize = sourceAx.ZLabel.FontSize;
+                            ax.ZLabel.Color = sourceAx.ZLabel.Color;
+                        end
+
+                        % 复制网格线设置
+                        ax.XGrid = sourceAx.XGrid;
+                        ax.YGrid = sourceAx.YGrid;
+                        ax.ZGrid = sourceAx.ZGrid;
+                        ax.GridLineStyle = sourceAx.GridLineStyle;
+                        ax.GridColor = sourceAx.GridColor;
+                        ax.GridAlpha = sourceAx.GridAlpha;
+
                         % 复制colormap
                         if ~isempty(sourceAx.Colormap)
                             colormap(ax, sourceAx.Colormap);
@@ -6099,7 +6126,25 @@ classdef MatViewerTool < matlab.apps.AppBase
                         % 检查是否有colorbar，如果有则复制
                         cb = findobj(cachedFig, 'Type', 'colorbar');
                         if ~isempty(cb)
-                            colorbar(ax);
+                            newCb = colorbar(ax);
+                            % 复制colorbar的标签
+                            if ~isempty(cb(1).Label.String)
+                                newCb.Label.String = cb(1).Label.String;
+                                newCb.Label.FontSize = cb(1).Label.FontSize;
+                            end
+                        end
+
+                        % 检查是否有legend，如果有则复制
+                        leg = findobj(cachedFig, 'Type', 'legend');
+                        if ~isempty(leg)
+                            % 获取legend的字符串和位置
+                            legStrings = leg(1).String;
+                            legLocation = leg(1).Location;
+                            if ~isempty(legStrings)
+                                newLeg = legend(ax, legStrings);
+                                newLeg.Location = legLocation;
+                                newLeg.FontSize = leg(1).FontSize;
+                            end
                         end
                     end
 
@@ -6131,7 +6176,7 @@ classdef MatViewerTool < matlab.apps.AppBase
                         % 获取第一个axes（应该只有一个）
                         sourceAx = figAxes(1);
 
-                        % 复制所有图形对象
+                        % 复制所有图形对象（包括text、line、image、surface等）
                         copyobj(allchild(sourceAx), ax);
 
                         % 复制axes属性
@@ -6146,6 +6191,33 @@ classdef MatViewerTool < matlab.apps.AppBase
                             ax.ZLabel.String = sourceAx.ZLabel.String;
                         end
 
+                        % 复制Title（包括其字体、颜色等属性）
+                        if ~isempty(sourceAx.Title.String)
+                            ax.Title.String = sourceAx.Title.String;
+                            ax.Title.FontSize = sourceAx.Title.FontSize;
+                            ax.Title.FontWeight = sourceAx.Title.FontWeight;
+                            ax.Title.Color = sourceAx.Title.Color;
+                            ax.Title.Interpreter = sourceAx.Title.Interpreter;
+                        end
+
+                        % 复制XLabel、YLabel、ZLabel的字体属性
+                        ax.XLabel.FontSize = sourceAx.XLabel.FontSize;
+                        ax.XLabel.Color = sourceAx.XLabel.Color;
+                        ax.YLabel.FontSize = sourceAx.YLabel.FontSize;
+                        ax.YLabel.Color = sourceAx.YLabel.Color;
+                        if ~isempty(sourceAx.ZLabel.String)
+                            ax.ZLabel.FontSize = sourceAx.ZLabel.FontSize;
+                            ax.ZLabel.Color = sourceAx.ZLabel.Color;
+                        end
+
+                        % 复制网格线设置
+                        ax.XGrid = sourceAx.XGrid;
+                        ax.YGrid = sourceAx.YGrid;
+                        ax.ZGrid = sourceAx.ZGrid;
+                        ax.GridLineStyle = sourceAx.GridLineStyle;
+                        ax.GridColor = sourceAx.GridColor;
+                        ax.GridAlpha = sourceAx.GridAlpha;
+
                         % 复制colormap
                         if ~isempty(sourceAx.Colormap)
                             colormap(ax, sourceAx.Colormap);
@@ -6154,7 +6226,25 @@ classdef MatViewerTool < matlab.apps.AppBase
                         % 检查是否有colorbar，如果有则复制
                         cb = findobj(figHandle, 'Type', 'colorbar');
                         if ~isempty(cb)
-                            colorbar(ax);
+                            newCb = colorbar(ax);
+                            % 复制colorbar的标签
+                            if ~isempty(cb(1).Label.String)
+                                newCb.Label.String = cb(1).Label.String;
+                                newCb.Label.FontSize = cb(1).Label.FontSize;
+                            end
+                        end
+
+                        % 检查是否有legend，如果有则复制
+                        leg = findobj(figHandle, 'Type', 'legend');
+                        if ~isempty(leg)
+                            % 获取legend的字符串和位置
+                            legStrings = leg(1).String;
+                            legLocation = leg(1).Location;
+                            if ~isempty(legStrings)
+                                newLeg = legend(ax, legStrings);
+                                newLeg.Location = legLocation;
+                                newLeg.FontSize = leg(1).FontSize;
+                            end
                         end
                     end
 
