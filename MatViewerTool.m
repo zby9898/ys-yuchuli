@@ -6300,7 +6300,7 @@ classdef MatViewerTool < matlab.apps.AppBase
                 % CFAR和非相参积累按钮保持启用和文本不变
                 % app.ShowPrep1Btn和ShowPrep2Btn是默认预处理，不清除
                 app.ShowPrep3Btn.Enable = 'off';
-                app.ShowPrep3Btn.Text = '预处理3';
+                app.ShowPrep3Btn.Text = '预处理';
                 
                 % 更新按钮状态
                 app.AddPrepBtn.Enable = 'on';
@@ -6504,32 +6504,80 @@ classdef MatViewerTool < matlab.apps.AppBase
         function executePrepOnCurrentFrame(app, prepIndex)
             % 对当前帧执行预处理并显示
             % prepIndex: 1, 2, 3
-            
+
             if isempty(app.MatData) || app.CurrentIndex > length(app.MatData)
                 uialert(app.UIFigure, '请先导入数据', '提示');
                 return;
             end
-            
+
             if prepIndex > length(app.PreprocessingList)
                 uialert(app.UIFigure, sprintf('预处理%d未配置', prepIndex), '提示');
                 return;
             end
-            
+
             prepConfig = app.PreprocessingList{prepIndex};
-            
+
+            % 检查当前显示的视图数量
+            numCurrentViews = checkCurrentViewCount(app);
+
+            % 检查即将添加的处理是否已经存在（会替换现有视图）
+            willReplaceExisting = false;
+            if ~isempty(app.PreprocessingResults) && app.CurrentIndex <= size(app.PreprocessingResults, 1)
+                % 根据预处理类型确定目标列
+                targetColumn = [];
+                if strcmp(prepConfig.type, 'CFAR')
+                    targetColumn = 2;
+                elseif strcmp(prepConfig.type, '非相参积累')
+                    targetColumn = 3;
+                elseif strcmp(prepConfig.type, '相参积累')
+                    targetColumn = 5;
+                elseif strcmp(prepConfig.type, '检测')
+                    targetColumn = 6;
+                elseif strcmp(prepConfig.type, '识别')
+                    targetColumn = 7;
+                else
+                    % 自定义预处理，检查是否已存在同名结果
+                    for col = 4:size(app.PreprocessingResults, 2)
+                        if ~isempty(app.PreprocessingResults{app.CurrentIndex, col})
+                            result = app.PreprocessingResults{app.CurrentIndex, col};
+                            if isfield(result, 'preprocessing_info') && ...
+                               isfield(result.preprocessing_info, 'name') && ...
+                               strcmp(result.preprocessing_info.name, prepConfig.name)
+                                targetColumn = col;
+                                break;
+                            end
+                        end
+                    end
+                end
+
+                if ~isempty(targetColumn) && targetColumn <= size(app.PreprocessingResults, 2)
+                    willReplaceExisting = ~isempty(app.PreprocessingResults{app.CurrentIndex, targetColumn});
+                end
+            end
+
+            % 如果已经有4个视图且不是替换现有的，需要让用户选择关闭哪个
+            if numCurrentViews >= 4 && ~willReplaceExisting
+                % 弹窗让用户选择关闭哪个视图
+                success = promptToCloseView(app);
+                if ~success
+                    % 用户取消了操作
+                    return;
+                end
+            end
+
             % 显示处理中状态
             oldStatus = app.StatusLabel.Text;
             app.StatusLabel.Text = sprintf('正在执行 %s ...', prepConfig.name);
             app.StatusLabel.FontColor = [1 0.6 0];
             drawnow;
-            
+
             % 执行预处理
             success = executePreprocessingOnCurrentData(app, prepConfig);
-            
+
             % 恢复状态
             app.StatusLabel.Text = oldStatus;
             app.StatusLabel.FontColor = [0 0.5 0];
-            
+
             if success
                 % 更新多视图显示
                 updateMultiView(app);
