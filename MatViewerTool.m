@@ -4647,6 +4647,58 @@ classdef MatViewerTool < matlab.apps.AppBase
                 app.PreprocessingList{end+1} = prepConfig;
                 updatePreprocessingControls(app);
 
+                % 检查当前视图数量（只检查当前帧）
+                if ismember(app.CurrentIndex, frameIndices)
+                    numCurrentViews = checkCurrentViewCount(app);
+
+                    % 检查是否会替换现有视图
+                    willReplaceExisting = false;
+                    if ~isempty(app.PreprocessingResults) && app.CurrentIndex <= size(app.PreprocessingResults, 1)
+                        % 根据预处理类型确定目标列
+                        targetColumn = [];
+                        if strcmp(prepConfig.type, 'CFAR')
+                            targetColumn = 2;
+                        elseif strcmp(prepConfig.type, '非相参积累')
+                            targetColumn = 3;
+                        elseif strcmp(prepConfig.type, '相参积累')
+                            targetColumn = 5;
+                        elseif strcmp(prepConfig.type, '检测')
+                            targetColumn = 6;
+                        elseif strcmp(prepConfig.type, '识别')
+                            targetColumn = 7;
+                        else
+                            % 自定义预处理，检查是否已存在同名结果
+                            for col = 4:size(app.PreprocessingResults, 2)
+                                if ~isempty(app.PreprocessingResults{app.CurrentIndex, col})
+                                    result = app.PreprocessingResults{app.CurrentIndex, col};
+                                    if isfield(result, 'preprocessing_info') && ...
+                                       isfield(result.preprocessing_info, 'name') && ...
+                                       strcmp(result.preprocessing_info.name, prepConfig.name)
+                                        targetColumn = col;
+                                        break;
+                                    end
+                                end
+                            end
+                        end
+
+                        if ~isempty(targetColumn) && targetColumn <= size(app.PreprocessingResults, 2)
+                            willReplaceExisting = ~isempty(app.PreprocessingResults{app.CurrentIndex, targetColumn});
+                        end
+                    end
+
+                    % 如果已经有4个视图且不是替换现有的，需要让用户选择关闭哪个
+                    if numCurrentViews >= 4 && ~willReplaceExisting
+                        % 弹窗让用户选择关闭哪个视图
+                        viewCloseSuccess = promptToCloseView(app);
+                        if ~viewCloseSuccess
+                            % 用户取消了操作，移除刚添加的预处理
+                            app.PreprocessingList(end) = [];
+                            updatePreprocessingControls(app);
+                            return;
+                        end
+                    end
+                end
+
                 % 执行预处理
                 success = executePreprocessingWithFrameRange(app, prepConfig, frameIndices);
 
@@ -5942,6 +5994,12 @@ classdef MatViewerTool < matlab.apps.AppBase
 
             % 所有axes的引用（按顺序分配）
             allAxes = {app.ImageAxes1, app.ImageAxes2, app.ImageAxes3, app.ImageAxes4};
+
+            % 限制最多显示4个视图
+            if numViews > 4
+                numViews = 4;
+                viewList = viewList(1:4);
+            end
 
             % 根据需要显示的视图数量调整布局
             switch numViews
