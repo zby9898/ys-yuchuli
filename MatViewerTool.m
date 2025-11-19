@@ -5928,11 +5928,21 @@ classdef MatViewerTool < matlab.apps.AppBase
                 return;
             end
 
-            % 清空所有axes
-            cla(app.ImageAxes1);
-            cla(app.ImageAxes2);
-            cla(app.ImageAxes3);
-            cla(app.ImageAxes4);
+            % 清空所有axes（彻底清除包括文字、图例等所有元素）
+            cla(app.ImageAxes1, 'reset');
+            cla(app.ImageAxes2, 'reset');
+            cla(app.ImageAxes3, 'reset');
+            cla(app.ImageAxes4, 'reset');
+
+            % 清除可能残留的colorbar和legend
+            try
+                colorbar(app.ImageAxes1, 'off');
+                colorbar(app.ImageAxes2, 'off');
+                colorbar(app.ImageAxes3, 'off');
+                colorbar(app.ImageAxes4, 'off');
+            catch
+                % 忽略错误
+            end
 
             % 默认隐藏所有视图
             app.ImageAxes1.Visible = 'off';
@@ -6058,15 +6068,20 @@ classdef MatViewerTool < matlab.apps.AppBase
             % titleStr: 标题字符串
             % sourceColumn: 数据来源列（0=原图, 2=CFAR, 3=非相参积累, 4=自定义预处理）
 
-            cla(ax);
+            % 彻底清空axes（包括文字、图例、colorbar等所有元素）
+            cla(ax, 'reset');
+
+            % 清除可能残留的colorbar
+            try
+                colorbar(ax, 'off');
+            catch
+                % 忽略错误
+            end
             
             % 优先检查是否有cached_figure（figure缓存）
             if isfield(data, 'additional_outputs') && isfield(data.additional_outputs, 'cached_figure')
                 % 从缓存的figure复制内容到UI axes
                 try
-                    % 清空当前axes
-                    cla(ax);
-
                     cachedFig = data.additional_outputs.cached_figure;
 
                     % 获取cached figure中的axes
@@ -6163,9 +6178,6 @@ classdef MatViewerTool < matlab.apps.AppBase
             elseif isfield(data, 'figure_file') && ~isempty(data.figure_file) && isfile(data.figure_file)
                 % 加载并显示.fig文件
                 try
-                    % 清空当前axes
-                    cla(ax);
-
                     % 加载.fig文件
                     figHandle = openfig(data.figure_file, 'invisible');
 
