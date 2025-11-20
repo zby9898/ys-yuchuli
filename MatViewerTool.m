@@ -5018,6 +5018,7 @@ classdef MatViewerTool < matlab.apps.AppBase
 
                     % 根据处理对象获取输入矩阵
                     inputMatrix = [];
+                    sourceData = [];  % 保存上一步的完整数据
                     processingObject = prepConfig.processing_object;
 
                     if strcmp(processingObject, '当前帧原图')
@@ -5081,6 +5082,9 @@ classdef MatViewerTool < matlab.apps.AppBase
                             continue;
                         end
 
+                        % 保存完整的上一步数据（供脚本访问raw_matrix、additional_outputs等）
+                        sourceData = prepData;
+
                         % 从预处理结果获取complex_matrix（而非raw_matrix）
                         % 注意：预处理始终使用complex_matrix作为输入
                         % raw_matrix是保存的预处理前原始数据，需要时可在脚本中手动使用
@@ -5142,6 +5146,12 @@ classdef MatViewerTool < matlab.apps.AppBase
                                 % 添加输出目录和文件名到参数中（供脚本使用）
                                 actualParams.output_dir = outputDir;
                                 actualParams.file_name = originalName;
+
+                                % 如果处理对象是上一步预处理结果，将完整的上一步数据添加到参数中
+                                % 脚本可通过 params.source_data 访问上一步的 raw_matrix、additional_outputs 等
+                                if ~isempty(sourceData)
+                                    actualParams.source_data = sourceData;
+                                end
 
                                 scriptFunc = str2func(scriptName);
                                 scriptOutput = scriptFunc(inputMatrix, actualParams);
@@ -5298,6 +5308,7 @@ classdef MatViewerTool < matlab.apps.AppBase
 
                 % 根据处理对象获取输入矩阵
                 inputMatrix = [];
+                sourceData = [];  % 保存上一步的完整数据
                 processingObject = prepConfig.processing_object;
 
                 if strcmp(processingObject, '当前帧原图')
@@ -5360,6 +5371,9 @@ classdef MatViewerTool < matlab.apps.AppBase
                         uialert(app.UIFigure, sprintf('当前帧未找到预处理结果"%s"，请确认上一步是否进行处理！', processingObject), '错误', 'Icon', 'error');
                         return;
                     end
+
+                    % 保存完整的上一步数据（供脚本访问raw_matrix、additional_outputs等）
+                    sourceData = prepData;
 
                     % 从预处理结果获取complex_matrix（而非raw_matrix）
                     % 注意：预处理始终使用complex_matrix作为输入
@@ -5425,6 +5439,12 @@ classdef MatViewerTool < matlab.apps.AppBase
                         % 添加输出目录和文件名到参数中（供脚本使用）
                         actualParams.output_dir = outputDir;
                         actualParams.file_name = originalName;
+
+                        % 如果处理对象是上一步预处理结果，将完整的上一步数据添加到参数中
+                        % 脚本可通过 params.source_data 访问上一步的 raw_matrix、additional_outputs 等
+                        if ~isempty(sourceData)
+                            actualParams.source_data = sourceData;
+                        end
 
                         % 调用脚本函数
                         scriptFunc = str2func(scriptName);
