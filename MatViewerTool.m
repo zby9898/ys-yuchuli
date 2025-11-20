@@ -4543,12 +4543,18 @@ classdef MatViewerTool < matlab.apps.AppBase
                     end
                 else
                     % 使用默认脚本
+                    scriptDir = fileparts(mfilename('fullpath'));
+
                     if strcmp(prepType, 'CFAR')
-                        scriptDir = fileparts(mfilename('fullpath'));
                         scriptPath = fullfile(scriptDir, 'default_cfar.m');
                     elseif strcmp(prepType, '非相参积累')
-                        scriptDir = fileparts(mfilename('fullpath'));
                         scriptPath = fullfile(scriptDir, 'default_noncoherent_integration.m');
+                    elseif strcmp(prepType, '相参积累')
+                        scriptPath = fullfile(scriptDir, 'default_coherent_integration.m');
+                    elseif strcmp(prepType, '检测')
+                        scriptPath = fullfile(scriptDir, 'default_detection.m');
+                    elseif strcmp(prepType, '识别')
+                        scriptPath = fullfile(scriptDir, 'default_recognition.m');
                     else
                         scriptPath = 'default';
                     end
