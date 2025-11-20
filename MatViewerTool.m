@@ -5191,10 +5191,11 @@ classdef MatViewerTool < matlab.apps.AppBase
                         % 创建输出数据（内存缓存保留完整数据）
                         processedData = currentData;
                         processedData.complex_matrix = processedMatrix;
+                        processedData.raw_matrix = rawMatrix;  % 保存预处理前的原始数据到内存
                         processedData.preprocessing_info = prepConfig;
                         processedData.preprocessing_time = datetime('now');
                         processedData.frame_index = frameIdx;
-                        
+
                         % 保存额外的输出信息（如果有）
                         if ~isempty(fieldnames(additionalOutputs))
                             processedData.additional_outputs = additionalOutputs;
@@ -5488,6 +5489,7 @@ classdef MatViewerTool < matlab.apps.AppBase
                 % 保存处理后的数据（内存中保留完整数据）
                 processedData = currentData;
                 processedData.complex_matrix = processedMatrix;
+                processedData.raw_matrix = rawMatrix;  % 保存预处理前的原始数据到内存
                 processedData.preprocessing_info = prepConfig;
                 processedData.preprocessing_time = datetime('now');
 
